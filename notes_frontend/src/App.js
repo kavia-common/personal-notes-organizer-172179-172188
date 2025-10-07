@@ -1,48 +1,51 @@
-import React, { useState, useEffect } from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React from 'react';
+import './styles/theme.css';
+import Sidebar from './components/Sidebar';
+import Toolbar from './components/Toolbar';
+import Editor from './components/Editor';
+import { NotesProvider, useNotesContext } from './hooks/useNotes';
+
+// PUBLIC_INTERFACE
+function AppShell() {
+  /** Top-level shell combining toolbar, sidebar, and editor area. */
+  const { selectedNote, notes } = useNotesContext();
+
+  return (
+    <div className="app-shell" role="application" aria-label="Personal Notes">
+      <Toolbar />
+      <div className="layout">
+        <aside className="sidebar" aria-label="Notes list">
+          <Sidebar />
+        </aside>
+        <main className="main" aria-live="polite">
+          {selectedNote ? (
+            <Editor />
+          ) : notes.length === 0 ? (
+            <div className="empty-state" role="note">
+              <h2>Welcome to Notes</h2>
+              <p>Create your first note using the New button above.</p>
+              <div className="footer-hint">Tip: Use Ctrl/Cmd + S to save quickly.</div>
+            </div>
+          ) : (
+            <div className="empty-state" role="note">
+              <h2>Select a note from the sidebar</h2>
+              <p>Or create a new one using the New button.</p>
+              <div className="footer-hint">Changes are autosaved.</div>
+            </div>
+          )}
+        </main>
+      </div>
+    </div>
+  );
+}
 
 // PUBLIC_INTERFACE
 function App() {
-  const [theme, setTheme] = useState('light');
-
-  // Effect to apply theme to document element
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-  }, [theme]);
-
-  // PUBLIC_INTERFACE
-  const toggleTheme = () => {
-    setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
-  };
-
+  /** App entrypoint wrapping the shell with NotesProvider context. */
   return (
-    <div className="App">
-      <header className="App-header">
-        <button 
-          className="theme-toggle" 
-          onClick={toggleTheme}
-          aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-        >
-          {theme === 'light' ? '🌙 Dark' : '☀️ Light'}
-        </button>
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <p>
-          Current theme: <strong>{theme}</strong>
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <NotesProvider>
+      <AppShell />
+    </NotesProvider>
   );
 }
 
